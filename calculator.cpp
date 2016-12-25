@@ -1,5 +1,4 @@
 // Copyright(c) 2016 Copyright Tomas Wood All Rights Reserved.
-// Comment not provided for those who doesn't understand this algorithm.
 #ifndef _Head_
 #define _Head_
 #include <cctype>
@@ -19,6 +18,8 @@ int w_inside(char op);
 int w_outside(char op);
 double operate(string op, double a, double b);
 int w_inside(char op) {
+  // the output privority: the same meaning as
+  // the privority in the stack;
   switch (op) {
   case '(':
     return 1;
@@ -36,6 +37,9 @@ int w_inside(char op) {
   return 0;
 }
 int w_outside(char op) {
+  /*
+    input privority, the same as the privority outside the stack;
+  */
   switch (op) {
   case '(':
     return 6;
@@ -54,55 +58,51 @@ int w_outside(char op) {
 }
 
 bool input(string n) {
-  // cout<<"string:"<<n<<endl;
-  stack<char> op;
-  queue<string> num;
-  string a_num = "";
-  string temp;
-  op.push('#');
 
-  int count = n.size();
+  stack<char> op;       // Store the operator
+  queue<string> num;    // The main sequence;
+  string a_num = "";    // form a number to put into sequence;
+  string temp;          // temp;
+  op.push('#');         // Judge the end of the original string;
+  int lc = 0, rc = 0;   // Judge the whether the brackets are in pair;
+  int count = n.size(); // Make it easy to use snippets
 
   for (size_t i = 0; i < count; i++) {
-
+    if (n[i] == '(') // Count the left brackets
+      lc++;
+    if (n[i] == ')') // Count the right brackets
+      rc++;
     if (((int)n[i] > 47 && (int)n[i] < 58) || (int)n[i] == 44 ||
         (int)n[i] == 46) {
       a_num = a_num + n[i];
       continue;
     }
-    // cout<<a_num;
+    //  Get the numbers and form a string.
+
     if (n[i] == '-' && (i == 0 || n[i - 1] == '(')) {
       a_num = a_num + n[i];
       continue;
     }
-
-    // cout<<"--"<<a_num<<"--"<<endl;
-    // correct
+    // Judge for (-1), (-2)*3 form;
     if (n[i] == '+' || n[i] == '-' || n[i] == '*' || n[i] == '/' ||
         n[i] == 'x' || n[i] == '(' || n[i] == ')' || n[i] == '#') {
-      //  cout<<"--"<<a_num<<"--"<<endl;
       num.push(a_num);
-      // cout<<"+-"<<a_num<<"-+"<<endl;
       a_num.clear();
       if (n[i] == '#') {
         num.push(a_num);
         break;
       }
-      // cout<<endl<<endl;
-      // correct//
-      if (w_outside(n[i]) > w_inside(op.top())) {
 
-        // cout<<"op.top:"<<op.top()<<endl;
+      if (w_outside(n[i]) > w_inside(op.top())) {
+        // If the input privority ouside bigger the output privority inside:
         op.push(n[i]);
-        // cout<<"count:"<<i<<endl;
-        // cout<<"status:"<<n[i]<<endl;
-        // cout<<"line 69:collect"<<endl;
+
         continue;
       }
       if (w_outside(n[i]) == w_inside(op.top())) {
         op.pop();
-        // cout<<"line73:collect"<<endl;
         continue;
+        // Always useless.
       }
       if (w_outside(n[i]) < w_inside(op.top())) {
         if (n[i] == ')') {
@@ -113,21 +113,26 @@ bool input(string n) {
           }
           op.pop();
           continue;
-        }
-        temp = op.top();
-        num.push(temp);
-        op.pop();
-        op.push(n[i]);
+        } // brackets judges.
+        while (w_outside(n[i]) < w_inside(op.top())) {
+          temp = op.top();
+          num.push(temp);
+          op.pop();
+        }              // move the operator from the stack to the queue;
+        op.push(n[i]); // input the biggest operator;
         continue;
       }
     }
   }
-
+  if (rc != lc) { // brackets not in pair.
+    cerr << "Error!!!" << endl;
+    exit(0);
+  }
   while (op.top() != '#') {
     temp = op.top();
     num.push(temp);
     op.pop();
-  }
+  } // Judge end;
   queue<string> filter;
   if (num.size() < 3) {
     cerr << "Error!" << endl;
@@ -139,17 +144,11 @@ bool input(string n) {
     if (num.front() != "" || num.front() != "\0") {
       filter.push(num.front());
     }
+
     num.pop();
   }
-
-  // calculating:
-  // cout<<"--"<<filter.size();
-  // while (!filter.empty()) {
-  //   cout<<"===="<<filter.front()<<endl;
-  //   filter.pop();
-  // }
-  // cin.get();
-
+  // filter: delete the wrong string made unknown;
+  // THIS IS A PATCH;
   double a, b;
   double result;
   stack<string> stk;
@@ -175,7 +174,7 @@ bool input(string n) {
     }
   }
   string f_res = stk.top();
-
+  // Format the result.
   for (size_t i = f_res.size() - 1; f_res[i] != '.'; i--) {
     if (f_res[i] == '0') {
       f_res.erase(i);
