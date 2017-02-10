@@ -17,7 +17,8 @@ int main() {
 
   heapsort(arr, length);
   for (int i = 0; i < length; i++) {
-    cout << arr[i + 1] << " ";
+    arr[i] = arr[i + 1];
+    cout << arr[i] << " ";
   }
   return 0;
 }
